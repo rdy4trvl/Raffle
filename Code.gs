@@ -19,7 +19,7 @@
 
 // ===== CONFIG =====
 const SHEET_NAME     = "Entries";
-const DISCOUNT_CODE  = "MC2026-RAFFLE";   // same code for everyone
+const DISCOUNT_CODE  = "MARINCENTURY2026-WCC";   // same code for everyone
 const FROM_NAME      = "Marin Century";
 const REPLY_TO       = "doug@marincyclists.com";
 const EMAIL_SUBJECT  = "You're entered — Marin Century 2026 raffle";
