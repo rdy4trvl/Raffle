@@ -97,7 +97,7 @@ function validate(d) {
   if (!d) return "No data received.";
   if (!d.firstName || !d.lastName) return "Name is required.";
   if (!d.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) return "Invalid email.";
-  if (d.email !== d.confirmEmail) return "Emails don't match.";
+
   if (d.ridden !== "yes" && d.ridden !== "no") return "Please answer the riding question.";
   return null;
 }
