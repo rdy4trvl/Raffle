@@ -1,8 +1,7 @@
 // ===== CONFIG =====
 // Paste the Apps Script web app URL here after you deploy it.
 // It looks like: https://script.google.com/macros/s/AKfyc.../exec
-//https://script.google.com/macros/s/AKfycbxcPp6Imy_yRCZU-GnfoyvV9w3a2xcxOmRMIl_Qh_SUcNH1fqlxaEbVZqomKcbYNnSEtw/exec
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcPp6Imy_yRCZU-GnfoyvV9w3a2xcxOmRMIl_Qh_SUcNH1fqlxaEbVZqomKcbYNnSEtw/exec";
+const SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
 
 // ===== DOM =====
 const form = document.getElementById("raffleForm");

@@ -19,7 +19,7 @@
 
 // ===== CONFIG =====
 const SHEET_NAME     = "Entries";
-const DISCOUNT_CODE  = "MARINCENTURY2026-WCC";   // same code for everyone
+const DISCOUNT_CODE  = "MC2026-RAFFLE";   // same code for everyone
 const FROM_NAME      = "Marin Century";
 const REPLY_TO       = "doug@marincyclists.com";
 const EMAIL_SUBJECT  = "You're entered — Marin Century 2026 raffle";
@@ -31,6 +31,7 @@ const COLUMNS = [
   "last_name",
   "email",
   "ridden_before",
+  "marketing_consent",
   "email_sent",
   "user_agent",
 ];
@@ -59,6 +60,7 @@ function doPost(e) {
       data.lastName,
       data.email,
       data.ridden,
+      data.marketingConsent || "no",
       false,                 // email_sent, updated below
       (e.parameter && e.parameter.ua) || "",
     ];
@@ -116,16 +118,20 @@ function sendConfirmation(d) {
   const body =
 `Hi ${d.firstName},
 
-You're entered in the Marin Century 2026 raffle to win a free entry to the ride on Saturday, August 1, 2026.
+You're entered in the Marin Century 2026 drawing to win a free entry to the Marin Century on Saturday, August 1, 2026.
 
-As a thank-you, here's a discount code you can use to register now:
+A random drawing will determine the winner. The winner will be notified by email and will have five days to respond.
+
+As a thank-you for entering, here's a discount code you can use to register now:
 
     ${DISCOUNT_CODE}
 
-We'll draw the winner after the expo and email whoever wins. Good luck, and we hope to see you at the start line either way.
+Safe Riding,
+Marin Cyclists
+https://marincentury.com?utm_source=dh_wcc&utm_medium=email&utm_campaign=2026mc&utm_content=2026_05_02_wcc_confirm
 
-— Marin Cyclists
-https://marincyclists.org
+---
+You are receiving this email because you entered the Marin Century free entry drawing. Future marketing emails will include an unsubscribe link.
 `;
 
   MailApp.sendEmail({

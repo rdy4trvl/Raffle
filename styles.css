@@ -176,6 +176,109 @@ button[type="submit"]:disabled {
   font-size: 15px;
 }
 
+.social-proof {
+  margin: 22px 0 18px;
+  padding: 16px 14px 14px;
+  background: #fff;
+  border-radius: 10px;
+  border: 1.5px solid var(--mc-border);
+}
+
+.stat {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--mc-green);
+  margin: 0 0 2px;
+  line-height: 1.25;
+}
+
+.stat-sub {
+  font-size: 13px;
+  color: var(--mc-muted);
+  margin: 0 0 10px;
+  font-style: italic;
+}
+
+.joke {
+  font-size: 14px;
+  color: var(--mc-ink);
+  margin: 8px 0 0;
+  padding-top: 10px;
+  border-top: 1px dashed var(--mc-border);
+  line-height: 1.35;
+}
+
+.cta-button {
+  display: block;
+  background: var(--mc-gold);
+  color: var(--mc-green-dark);
+  text-decoration: none;
+  padding: 14px 16px;
+  font-size: 17px;
+  font-weight: 700;
+  border-radius: 10px;
+  text-align: center;
+  margin: 4px 0 8px;
+  transition: background 0.15s;
+}
+
+.cta-button:hover,
+.cta-button:focus {
+  background: #c89428;
+}
+
+/* Legal footer with rules + privacy links */
+.legal-footer {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--mc-border);
+  font-size: 12px;
+  color: var(--mc-muted);
+}
+
+.legal-footer a {
+  color: var(--mc-green);
+  text-decoration: none;
+}
+
+.legal-footer a:hover,
+.legal-footer a:focus {
+  text-decoration: underline;
+}
+
+.legal-footer span {
+  margin: 0 6px;
+}
+
+/* Rules page */
+.rules-page h1 {
+  font-size: 24px;
+  text-transform: none;
+}
+
+.rules h3 {
+  color: var(--mc-green);
+  font-size: 15px;
+  margin: 18px 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rules h3:first-child {
+  margin-top: 0;
+}
+
+.rules p {
+  margin: 0 0 6px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.rules a {
+  color: var(--mc-green);
+}
+
 .checkmark {
   width: 60px;
   height: 60px;
