@@ -2,8 +2,11 @@
 // Paste the Apps Script web app URL here after you deploy it.
 // It looks like: https://script.google.com/macros/s/AKfyc.../exec
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcPp6Imy_yRCZU-GnfoyvV9w3a2xcxOmRMIl_Qh_SUcNH1fqlxaEbVZqomKcbYNnSEtw/exec";
-const GEOLOOKUP_URL = "https://ipapi.co/json/";
-const GEOLOOKUP_TIMEOUT_MS = 1500;
+const GEOLOOKUP_URLS = [
+  "https://ipwho.is/",
+  "https://get.geojs.io/v1/ip/geo.json",
+];
+const GEOLOOKUP_TIMEOUT_MS = 2500;
 
 // ===== DOM =====
 const form = document.getElementById("raffleForm");
@@ -31,28 +34,24 @@ function deriveLocationLabel(city) {
   return "Unknown";
 }
 
-async function getGeoData() {
-  const fallback = {
-    geoCity: "",
-    geoRegion: "",
-    geoCountry: "",
-    locationLabel: "Unknown",
-  };
-
+async function fetchGeoLookup(url) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), GEOLOOKUP_TIMEOUT_MS);
 
   try {
-    const res = await fetch(GEOLOOKUP_URL, {
+    const res = await fetch(url, {
       method: "GET",
       signal: controller.signal,
     });
-    if (!res.ok) return fallback;
+    if (!res.ok) return null;
 
     const geo = await res.json();
+    if (geo.success === false) return null;
+
     const geoCity = String(geo.city || "").trim();
     const geoRegion = String(geo.region || "").trim();
     const geoCountry = String(geo.country_name || geo.country || "").trim();
+    if (!geoCity && !geoRegion && !geoCountry) return null;
 
     return {
       geoCity,
@@ -61,11 +60,27 @@ async function getGeoData() {
       locationLabel: deriveLocationLabel(geoCity),
     };
   } catch (err) {
-    console.warn("IP geolocation lookup failed:", err);
-    return fallback;
+    console.warn("IP geolocation lookup failed:", url, err);
+    return null;
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function getGeoData() {
+  const fallback = {
+    geoCity: "",
+    geoRegion: "",
+    geoCountry: "",
+    locationLabel: "Unknown",
+  };
+
+  for (const url of GEOLOOKUP_URLS) {
+    const geoData = await fetchGeoLookup(url);
+    if (geoData) return geoData;
+  }
+
+  return fallback;
 }
 
 // ===== Submit handler =====
