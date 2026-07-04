@@ -2,6 +2,8 @@
 // Paste the Apps Script web app URL here after you deploy it.
 // It looks like: https://script.google.com/macros/s/AKfyc.../exec
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcPp6Imy_yRCZU-GnfoyvV9w3a2xcxOmRMIl_Qh_SUcNH1fqlxaEbVZqomKcbYNnSEtw/exec";
+const GEOLOOKUP_URL = "https://ipapi.co/json/";
+const GEOLOOKUP_TIMEOUT_MS = 1500;
 
 // ===== DOM =====
 const form = document.getElementById("raffleForm");
@@ -19,6 +21,51 @@ function showError(msg) {
 
 function clearError() {
   errorMsg.textContent = "";
+}
+
+function deriveLocationLabel(city) {
+  const normalizedCity = String(city || "").trim().toLowerCase();
+
+  if (normalizedCity === "reno") return "Reno";
+  if (normalizedCity === "mill valley") return "Mill Valley";
+  return "Unknown";
+}
+
+async function getGeoData() {
+  const fallback = {
+    geoCity: "",
+    geoRegion: "",
+    geoCountry: "",
+    locationLabel: "Unknown",
+  };
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), GEOLOOKUP_TIMEOUT_MS);
+
+  try {
+    const res = await fetch(GEOLOOKUP_URL, {
+      method: "GET",
+      signal: controller.signal,
+    });
+    if (!res.ok) return fallback;
+
+    const geo = await res.json();
+    const geoCity = String(geo.city || "").trim();
+    const geoRegion = String(geo.region || "").trim();
+    const geoCountry = String(geo.country_name || geo.country || "").trim();
+
+    return {
+      geoCity,
+      geoRegion,
+      geoCountry,
+      locationLabel: deriveLocationLabel(geoCity),
+    };
+  } catch (err) {
+    console.warn("IP geolocation lookup failed:", err);
+    return fallback;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 // ===== Submit handler =====
@@ -56,6 +103,8 @@ form.addEventListener("submit", async (e) => {
   submitBtn.disabled = true;
 
   try {
+    Object.assign(data, await getGeoData());
+
     // Apps Script web apps accept simple POSTs. We send as text/plain
     // to avoid a CORS preflight (Apps Script doesn't handle OPTIONS well).
     const res = await fetch(SCRIPT_URL, {

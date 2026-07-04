@@ -34,6 +34,10 @@ const COLUMNS = [
   "marketing_consent",
   "email_sent",
   "user_agent",
+  "geo_city",
+  "geo_region",
+  "geo_country",
+  "location_label",
 ];
 
 // ===== Entry point =====
@@ -51,6 +55,7 @@ function doPost(e) {
     if (err) return jsonOut({ ok: false, error: err });
 
     const sheet = getSheet();
+    const geo = normalizeGeoData(data);
 
     // Write the row first, email second. If email fails we still have the entry.
     const timestamp = new Date();
@@ -63,6 +68,10 @@ function doPost(e) {
       data.marketingConsent || "no",
       false,                 // email_sent, updated below
       (e.parameter && e.parameter.ua) || "",
+      geo.city,
+      geo.region,
+      geo.country,
+      geo.locationLabel,
     ];
     sheet.appendRow(row);
     const rowNum = sheet.getLastRow();
@@ -103,6 +112,31 @@ function validate(d) {
   return null;
 }
 
+function normalizeGeoData(d) {
+  const city = cleanText(d.geoCity);
+  const region = cleanText(d.geoRegion);
+  const country = cleanText(d.geoCountry);
+
+  return {
+    city: city,
+    region: region,
+    country: country,
+    locationLabel: deriveLocationLabel(city),
+  };
+}
+
+function deriveLocationLabel(city) {
+  const normalizedCity = String(city || "").trim().toLowerCase();
+
+  if (normalizedCity === "reno") return "Reno";
+  if (normalizedCity === "mill valley") return "Mill Valley";
+  return "Unknown";
+}
+
+function cleanText(value) {
+  return String(value || "").trim().slice(0, 100);
+}
+
 function getSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_NAME);
@@ -110,8 +144,33 @@ function getSheet() {
     sheet = ss.insertSheet(SHEET_NAME);
     sheet.appendRow(COLUMNS);
     sheet.setFrozenRows(1);
+  } else {
+    ensureColumns(sheet);
   }
   return sheet;
+}
+
+function ensureColumns(sheet) {
+  if (sheet.getLastRow() === 0 || (sheet.getLastRow() === 1 && sheet.getLastColumn() === 1 && !sheet.getRange(1, 1).getValue())) {
+    sheet.getRange(1, 1, 1, COLUMNS.length).setValues([COLUMNS]);
+    sheet.setFrozenRows(1);
+    return;
+  }
+
+  const lastColumn = Math.max(sheet.getLastColumn(), 1);
+  const headerRange = sheet.getRange(1, 1, 1, lastColumn);
+  const headers = headerRange.getValues()[0];
+  let nextColumn = headers.length + 1;
+
+  COLUMNS.forEach((column) => {
+    if (headers.indexOf(column) === -1) {
+      sheet.getRange(1, nextColumn).setValue(column);
+      headers.push(column);
+      nextColumn += 1;
+    }
+  });
+
+  sheet.setFrozenRows(1);
 }
 
 function sendConfirmation(d) {
