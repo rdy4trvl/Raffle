@@ -23,6 +23,7 @@ const DISCOUNT_CODE  = "MC2026-RAFFLE";   // same code for everyone
 const FROM_NAME      = "Marin Century";
 const REPLY_TO       = "doug@marincyclists.com";
 const EMAIL_SUBJECT  = "You're entered — Marin Century 2026 raffle";
+const REGISTRATION_URL = "https://marincentury.com/?utm_source=qr&utm_medium=email_confirm&utm_campaign=7_11_boths&utm_content=drawing&registrants.source=source%3Aqr%7Cmedium%3Aemail_confirm%7Ccampaign%3A7_11_boths%7Ccontent%3Adrawing";
 
 // Column order. Change here and the script follows.
 const COLUMNS = [
@@ -215,21 +216,52 @@ As a thank-you for entering, here's a discount code you can use to register now:
 
     ${DISCOUNT_CODE}
 
+Register Here:
+${REGISTRATION_URL}
+
 Safe Riding,
 Marin Cyclists
-https://marincentury.com/?utm_source=qr&utm_medium=email_confirm&utm_campaign=s_mv_path&utm_content=drawing&registrants.source=source%3Aqr%7Cmedium%3Aemail_confirm%7Ccampaign%3As_mv_path%7Ccontent%3Adrawing
 
 ---
 You are receiving this email because you entered the Marin Century free entry drawing. Future marketing emails will include an unsubscribe link.
 `;
 
+  const htmlBody =
+`<p>Hi ${escapeHtml(d.firstName)},</p>
+
+<p>You're entered in the Marin Century 2026 drawing to win a free entry to the Marin Century on Saturday, August 1, 2026.</p>
+
+<p>A random drawing will determine the winner. The winner will be notified by email and will have five days to respond.</p>
+
+<p>As a thank-you for entering, here's a discount code you can use to register now:</p>
+
+<p style="margin-left: 24px;">${DISCOUNT_CODE}</p>
+
+<p><a href="${REGISTRATION_URL}">Register Here</a></p>
+
+<p>Safe Riding,<br>
+Marin Cyclists</p>
+
+<hr>
+<p>You are receiving this email because you entered the Marin Century free entry drawing. Future marketing emails will include an unsubscribe link.</p>`;
+
   MailApp.sendEmail({
     to: d.email,
     subject: EMAIL_SUBJECT,
     body: body,
+    htmlBody: htmlBody,
     name: FROM_NAME,
     replyTo: REPLY_TO,
   });
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function jsonOut(obj) {
