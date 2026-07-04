@@ -7,6 +7,10 @@ const GEOLOOKUP_URLS = [
   "https://get.geojs.io/v1/ip/geo.json",
 ];
 const GEOLOOKUP_TIMEOUT_MS = 2500;
+const LOCATION_ANCHORS = [
+  { label: "Death Ride", latitude: 39.5296, longitude: -119.8138 },
+  { label: "Mill Valley", latitude: 37.906, longitude: -122.545 },
+];
 
 // ===== DOM =====
 const form = document.getElementById("raffleForm");
@@ -26,12 +30,39 @@ function clearError() {
   errorMsg.textContent = "";
 }
 
-function deriveLocationLabel(city) {
-  const normalizedCity = String(city || "").trim().toLowerCase();
+function toCoordinate(value) {
+  if (value === null || value === undefined || String(value).trim() === "") return null;
+  const coordinate = Number(value);
+  return Number.isFinite(coordinate) ? coordinate : null;
+}
 
-  if (normalizedCity === "reno") return "Reno";
-  if (normalizedCity === "mill valley") return "Mill Valley";
-  return "Unknown";
+function distanceMiles(fromLatitude, fromLongitude, toLatitude, toLongitude) {
+  const earthRadiusMiles = 3958.8;
+  const degreesToRadians = Math.PI / 180;
+  const fromLatRad = fromLatitude * degreesToRadians;
+  const toLatRad = toLatitude * degreesToRadians;
+  const deltaLatRad = (toLatitude - fromLatitude) * degreesToRadians;
+  const deltaLonRad = (toLongitude - fromLongitude) * degreesToRadians;
+  const a =
+    Math.sin(deltaLatRad / 2) * Math.sin(deltaLatRad / 2) +
+    Math.cos(fromLatRad) * Math.cos(toLatRad) *
+    Math.sin(deltaLonRad / 2) * Math.sin(deltaLonRad / 2);
+
+  return earthRadiusMiles * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function deriveLocationLabel(latitude, longitude) {
+  const geoLatitude = toCoordinate(latitude);
+  const geoLongitude = toCoordinate(longitude);
+
+  if (geoLatitude === null || geoLongitude === null) return "Unknown";
+
+  return LOCATION_ANCHORS
+    .map((anchor) => ({
+      label: anchor.label,
+      distance: distanceMiles(geoLatitude, geoLongitude, anchor.latitude, anchor.longitude),
+    }))
+    .sort((a, b) => a.distance - b.distance)[0].label;
 }
 
 async function fetchGeoLookup(url) {
@@ -51,13 +82,17 @@ async function fetchGeoLookup(url) {
     const geoCity = String(geo.city || "").trim();
     const geoRegion = String(geo.region || "").trim();
     const geoCountry = String(geo.country_name || geo.country || "").trim();
+    const geoLatitude = toCoordinate(geo.latitude);
+    const geoLongitude = toCoordinate(geo.longitude);
     if (!geoCity && !geoRegion && !geoCountry) return null;
 
     return {
       geoCity,
       geoRegion,
       geoCountry,
-      locationLabel: deriveLocationLabel(geoCity),
+      geoLatitude,
+      geoLongitude,
+      locationLabel: deriveLocationLabel(geoLatitude, geoLongitude),
     };
   } catch (err) {
     console.warn("IP geolocation lookup failed:", url, err);
@@ -72,6 +107,8 @@ async function getGeoData() {
     geoCity: "",
     geoRegion: "",
     geoCountry: "",
+    geoLatitude: null,
+    geoLongitude: null,
     locationLabel: "Unknown",
   };
 

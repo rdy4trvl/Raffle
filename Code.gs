@@ -39,6 +39,10 @@ const COLUMNS = [
   "geo_country",
   "location_label",
 ];
+const LOCATION_ANCHORS = [
+  { label: "Death Ride", latitude: 39.5296, longitude: -119.8138 },
+  { label: "Mill Valley", latitude: 37.906, longitude: -122.545 },
+];
 
 // ===== Entry point =====
 function doPost(e) {
@@ -116,21 +120,47 @@ function normalizeGeoData(d) {
   const city = cleanText(d.geoCity);
   const region = cleanText(d.geoRegion);
   const country = cleanText(d.geoCountry);
+  const latitude = toCoordinate(d.geoLatitude);
+  const longitude = toCoordinate(d.geoLongitude);
 
   return {
     city: city,
     region: region,
     country: country,
-    locationLabel: deriveLocationLabel(city),
+    locationLabel: deriveLocationLabel(latitude, longitude),
   };
 }
 
-function deriveLocationLabel(city) {
-  const normalizedCity = String(city || "").trim().toLowerCase();
+function toCoordinate(value) {
+  if (value === null || value === undefined || String(value).trim() === "") return null;
+  const coordinate = Number(value);
+  return Number.isFinite(coordinate) ? coordinate : null;
+}
 
-  if (normalizedCity === "reno") return "Reno";
-  if (normalizedCity === "mill valley") return "Mill Valley";
-  return "Unknown";
+function distanceMiles(fromLatitude, fromLongitude, toLatitude, toLongitude) {
+  const earthRadiusMiles = 3958.8;
+  const degreesToRadians = Math.PI / 180;
+  const fromLatRad = fromLatitude * degreesToRadians;
+  const toLatRad = toLatitude * degreesToRadians;
+  const deltaLatRad = (toLatitude - fromLatitude) * degreesToRadians;
+  const deltaLonRad = (toLongitude - fromLongitude) * degreesToRadians;
+  const a =
+    Math.sin(deltaLatRad / 2) * Math.sin(deltaLatRad / 2) +
+    Math.cos(fromLatRad) * Math.cos(toLatRad) *
+    Math.sin(deltaLonRad / 2) * Math.sin(deltaLonRad / 2);
+
+  return earthRadiusMiles * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function deriveLocationLabel(latitude, longitude) {
+  if (latitude === null || longitude === null) return "Unknown";
+
+  return LOCATION_ANCHORS
+    .map((anchor) => ({
+      label: anchor.label,
+      distance: distanceMiles(latitude, longitude, anchor.latitude, anchor.longitude),
+    }))
+    .sort((a, b) => a.distance - b.distance)[0].label;
 }
 
 function cleanText(value) {
