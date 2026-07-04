@@ -217,7 +217,7 @@ As a thank-you for entering, here's a discount code you can use to register now:
 
 Safe Riding,
 Marin Cyclists
-https://marincentury.com?utm_source=dh_wcc&utm_medium=email&utm_campaign=2026mc&utm_content=2026_05_02_wcc_confirm
+https://marincentury.com/?utm_source=qr&utm_medium=email_confirm&utm_campaign=s_mv_path&utm_content=drawing&registrants.source=source%3Aqr%7Cmedium%3Aemail_confirm%7Ccampaign%3As_mv_path%7Ccontent%3Adrawing
 
 ---
 You are receiving this email because you entered the Marin Century free entry drawing. Future marketing emails will include an unsubscribe link.
