@@ -19,11 +19,15 @@
 
 // ===== CONFIG =====
 const SHEET_NAME     = "Entries";
-const DISCOUNT_CODE  = "MC2026-RAFFLE";   // same code for everyone
 const FROM_NAME      = "Marin Century";
 const REPLY_TO       = "doug@marincyclists.com";
 const EMAIL_SUBJECT  = "You're entered — Marin Century 2026 raffle";
 const REGISTRATION_URL = "https://marincentury.com/?utm_source=qr&utm_medium=email_confirm&utm_campaign=7_11_boths&utm_content=drawing&registrants.source=source%3Aqr%7Cmedium%3Aemail_confirm%7Ccampaign%3A7_11_boths%7Ccontent%3Adrawing";
+const DEFAULT_DISCOUNT_CODE = "MC2026-RAFFLE";
+const DISCOUNT_CODES_BY_LOCATION = {
+  "Death Ride": "MRNCENT26DR",
+  "Mill Valley": "MRNCENT26MVS",
+};
 
 // Column order. Change here and the script follows.
 const COLUMNS = [
@@ -84,7 +88,7 @@ function doPost(e) {
     // Send confirmation email
     let emailOk = false;
     try {
-      sendConfirmation(data);
+      sendConfirmation(data, geo);
       emailOk = true;
     } catch (mailErr) {
       console.error("Email send failed:", mailErr);
@@ -204,7 +208,12 @@ function ensureColumns(sheet) {
   sheet.setFrozenRows(1);
 }
 
-function sendConfirmation(d) {
+function getDiscountCode(locationLabel) {
+  return DISCOUNT_CODES_BY_LOCATION[locationLabel] || DEFAULT_DISCOUNT_CODE;
+}
+
+function sendConfirmation(d, geo) {
+  const discountCode = getDiscountCode(geo && geo.locationLabel);
   const body =
 `Hi ${d.firstName},
 
@@ -214,7 +223,7 @@ A random drawing will determine the winner. The winner will be notified by email
 
 As a thank-you for entering, here's a discount code you can use to register now:
 
-    ${DISCOUNT_CODE}
+    ${discountCode}
 
 Register Here:
 ${REGISTRATION_URL}
@@ -235,7 +244,7 @@ You are receiving this email because you entered the Marin Century free entry dr
 
 <p>As a thank-you for entering, here's a discount code you can use to register now:</p>
 
-<p style="margin-left: 24px;">${DISCOUNT_CODE}</p>
+<p style="margin-left: 24px;">${discountCode}</p>
 
 <p><a href="${REGISTRATION_URL}">Register Here</a></p>
 
